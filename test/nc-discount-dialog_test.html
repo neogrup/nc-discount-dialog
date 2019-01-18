@@ -1,52 +1,187 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../neon-animation/web-animations.html">
+<link rel="import" href="../neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../paper-spinner/paper-spinner.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/communication-icons.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 
-    <title>nc-discount-dialog test</title>
+<dom-module id="nc-discount-dialog">
+  <template>
+    <style>
+      paper-icon-button {
+        width: 60px;
+        height: 60px;
+      }
+      paper-dialog.modalNoApp > div.header {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
 
-    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
-    <script src="../../web-component-tester/browser.js"></script>
+      paper-dialog.modalNoApp > div.header > iron-icon {
+        margin-right: 12px;
+      }
 
-    <link rel="import" href="../nc-discount-dialog.html">
-  </head>
-  <body>
+      paper-dialog.modalNoApp > div.content {
 
-    <test-fixture id="BasicTestFixture">
-      <template>
-        <nc-discount-dialog></nc-discount-dialog>
-      </template>
-    </test-fixture>
+      }
 
-    <test-fixture id="ChangedPropertyTestFixture">
-      <template>
-        <nc-discount-dialog prop1="new-prop1"></nc-discount-dialog>
-      </template>
-    </test-fixture>
+      paper-dialog.modalNoApp > div.content > div.content-reference-values {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-around-justified;
+      }
 
-    <script>
-      suite('nc-discount-dialog', () => {
+      paper-dialog.modalNoApp > div.content > div.content-reference-values > div.min {
+        @apply --layout-vertical;
+        @apply --layout-center;
+      }
+      
+      paper-dialog.modalNoApp > div.content > div.content-reference-values > div.max {
+        @apply --layout-vertical;
+        @apply --layout-center;
+      }
 
-        test('instantiating the element with default properties works', () => {
-          const element = fixture('BasicTestFixture');
-          assert.equal(element.prop1, 'nc-discount-dialog');
-          const elementShadowRoot = element.shadowRoot;
-          const elementHeader = elementShadowRoot.querySelector('h2');
-          assert.equal(elementHeader.innerHTML, 'Hello nc-discount-dialog!');
-        });
+      paper-dialog.modalNoApp > div.content > div.content-percentage {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-center-justified;
+      }
 
-        test('setting a property on the element works', () => {
-          // Create a test fixture
-          const element = fixture('ChangedPropertyTestFixture');
-          assert.equal(element.prop1, 'new-prop1');
-          const elementShadowRoot = element.shadowRoot;
-          const elementHeader = elementShadowRoot.querySelector('h2');
-          assert.equal(elementHeader.innerHTML, 'Hello new-prop1!');
-        });
+      paper-dialog.modalNoApp > div.content > div.content-percentage > div.percentage{
+        width: 80px;
+      }
 
-      });
-    </script>
+      paper-dialog.modalNoApp > div.content > div.content-amount {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-center-justified;
+      }
 
-  </body>
-</html>
+      paper-dialog.modalNoApp > div.content > div.content-amount > div.amount {
+        width: 80px;
+      }
+    </style>
+    
+    <paper-dialog id="discountDialog" class="modalNoApp" modal entry-animation="scale-up-animation">
+      <iron-a11y-keys id="a11ySignIn" keys="enter" on-keys-pressed="_accept"></iron-a11y-keys>
+      <div class="header">
+        <h3>[[discountData.name]]</h3>
+      </div>
+      <div class="content">
+        <p>{{localize('DISCOUNT_DIALOG_SUBTITLE')}} <b>[[amountToApplyDiscount]] </b></p>
+        <div class="content-reference-values">
+          <div class="min">
+            <div>Mín.</div>
+            <div>[[discountData.minValue]]%</div>
+          </div>
+          <div class="max">
+            <div>Max.</div>
+            <div>[[discountData.maxValue]]%</div>
+          </div>
+        </div>
+        <div class="content-percentage">
+          <paper-icon-button icon="remove-circle" style="color: var(--app-secondary-color);" on-tap="_percentageDec"></paper-icon-button>
+          <div class="percentage">
+            <paper-input id="percentage" label="{{localize('INPUT_DISCOUNT_PERCENTAGE')}}"  error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.percentage}}" required></paper-input>
+          </div>
+          <paper-icon-button icon="add-circle" style="color: var(--app-secondary-color);" on-tap="_percentageInc"></paper-icon-button>
+        </div>
+        <div class="content-amount">
+          <div class="amount">
+            <paper-input id="amount" label="{{localize('INPUT_DISCOUNT_AMOUNT')}}" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.amount}}" required></paper-input>
+          </div>
+        </div>
+      </div>
+      <div class="buttons">
+        <paper-button raised dialog-dismiss>{{localize('BUTTON_CLOSE')}}</paper-button>
+        <paper-button raised disabled$="[[loading]]" on-tap="_accept">{{localize('BUTTON_ACCEPT')}}</paper-button>
+      </div>
+    </paper-dialog>
+
+  </template>
+
+  <script>
+    
+    class NcDiscountDialog extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
+      static get is() { return 'nc-discount-dialog'; }
+      static get properties() {
+        return {
+          language: {
+            type: String
+          },
+          formData: {
+            type: Object
+          },
+          discountData: {
+            type: Object,
+            value: {}
+          }, 
+          discountIncreasePercent: Number,
+          amountToApplyDiscount: Number
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.useKeyIfMissing = true;
+        this.loadResources(this.resolveUrl('static/translations.json'));
+      }
+
+      open(){
+        /* Fix Modal paper-dialog appears behind its backdrop */
+        // var app = document.querySelector('body').firstElementChild.shadowRoot;
+        // Polymer.dom(app).appendChild(this.$.discountDialog);
+        
+        this.formData = {};
+        this.set('formData.percentage', this.discountData.percentage);
+
+        this.set('formData.amount', (this.amountToApplyDiscount * this.discountData.percentage) / 100);
+        this._calcAmount();
+
+        this.$.percentage.invalid = false;
+        this.$.amount.invalid = false;
+
+        this.$.discountDialog.open();
+      }
+
+      close(){
+        this.$.discountDialog.close();
+      }
+
+      _percentageDec(){
+        if (Number(this.formData.percentage) - Number(this.discountIncreasePercent) >= Number(this.discountData.minValue)){
+          this.set('formData.percentage', Number(this.formData.percentage) - Number(this.discountIncreasePercent));
+          this._calcAmount();
+        }
+      }
+
+      _percentageInc(){
+        if (Number(this.formData.percentage) + Number(this.discountIncreasePercent) <= Number(this.discountData.maxValue)){
+          this.set('formData.percentage', Number(this.formData.percentage) + Number(this.discountIncreasePercent));
+          this._calcAmount();
+        }
+      }
+
+      _calcAmount(){
+        this.set('formData.amount', (this.amountToApplyDiscount * this.formData.percentage) / 100);
+      }
+
+      _accept(){
+        if (this.$.percentage.validate()) {
+          console.log('accept')
+          // this.dispatchEvent(new CustomEvent('discount-accepted', {detail: {user: this.userData, discount: this.formData.discount}, bubbles: true, composed: true }));
+          // this.$.discountDialog.close();
+        }
+      }
+    }
+
+    window.customElements.define(NcDiscountDialog.is, NcDiscountDialog);
+  </script>
+</dom-module>
