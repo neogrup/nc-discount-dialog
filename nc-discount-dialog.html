@@ -10,28 +10,97 @@
 <link rel="import" href="../iron-icons/communication-icons.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 
 <dom-module id="nc-discount-dialog">
   <template>
     <style>
+      paper-icon-button {
+        width: 60px;
+        height: 60px;
+      }
+      paper-dialog.modalNoApp > div.header {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+
+      paper-dialog.modalNoApp > div.header > iron-icon {
+        margin-right: 12px;
+      }
+
+      paper-dialog.modalNoApp > div.content {
+
+      }
+
+      paper-dialog.modalNoApp > div.content > div.content-reference-values {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-around-justified;
+      }
+
+      paper-dialog.modalNoApp > div.content > div.content-reference-values > div.min {
+        @apply --layout-vertical;
+        @apply --layout-center;
+      }
+      
+      paper-dialog.modalNoApp > div.content > div.content-reference-values > div.max {
+        @apply --layout-vertical;
+        @apply --layout-center;
+      }
+
+      paper-dialog.modalNoApp > div.content > div.content-percentage {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-center-justified;
+      }
+
+      paper-dialog.modalNoApp > div.content > div.content-percentage > div.percentage{
+        width: 80px;
+      }
+
+      paper-dialog.modalNoApp > div.content > div.content-amount {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-center-justified;
+      }
+
+      paper-dialog.modalNoApp > div.content > div.content-amount > div.amount {
+        width: 80px;
+      }
     </style>
     
     <paper-dialog id="discountDialog" class="modalNoApp" modal entry-animation="scale-up-animation">
       <iron-a11y-keys id="a11ySignIn" keys="enter" on-keys-pressed="_accept"></iron-a11y-keys>
       <div class="header">
-        <iron-icon icon="communication:vpn-key"></iron-icon><h3>{{localize('DISCOUNT_DIALOG_TITLE')}}</h3>
+        <h3>[[discountData.name]]</h3>
       </div>
       <div class="content">
-        <!-- <p>{{localize('DISCOUNT_DIALOG_SUBTITLE')}} <b>[[userData.name]]</b></p> -->
-        <p id="errorDiv" class="alert-error" hidden$="[[hideErrorDesc]]">[[errorDesc]]</p>
-
-        <paper-input _autofocus id="discount" _label="{{localize('INPUT_DISCOUNT')}}" type="discount" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.discount}}" required></paper-input>
+        <p>{{localize('DISCOUNT_DIALOG_SUBTITLE')}} <b>[[amountToApplyDiscount]] </b></p>
+        <div class="content-reference-values">
+          <div class="min">
+            <div>Mín.</div>
+            <div>[[discountData.minValue]]%</div>
+          </div>
+          <div class="max">
+            <div>Max.</div>
+            <div>[[discountData.maxValue]]%</div>
+          </div>
+        </div>
+        <div class="content-percentage">
+          <paper-icon-button icon="remove-circle" style="color: var(--app-secondary-color);" on-tap="_percentageDec"></paper-icon-button>
+          <div class="percentage">
+            <paper-input id="percentage" label="{{localize('INPUT_DISCOUNT_PERCENTAGE')}}"  error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.percentage}}" required></paper-input>
+          </div>
+          <paper-icon-button icon="add-circle" style="color: var(--app-secondary-color);" on-tap="_percentageInc"></paper-icon-button>
+        </div>
+        <div class="content-amount">
+          <div class="amount">
+            <paper-input id="amount" label="{{localize('INPUT_DISCOUNT_AMOUNT')}}" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.amount}}" required></paper-input>
+          </div>
+        </div>
       </div>
       <div class="buttons">
-        <div hidden$="{{!loading}}">
-          <paper-spinner class="dialog" active></paper-spinner>
-        </div>
-        <paper-button raised dialog-dismiss disabled$="[[loading]]">{{localize('BUTTON_CLOSE')}}</paper-button>
+        <paper-button raised dialog-dismiss>{{localize('BUTTON_CLOSE')}}</paper-button>
         <paper-button raised disabled$="[[loading]]" on-tap="_accept">{{localize('BUTTON_ACCEPT')}}</paper-button>
       </div>
     </paper-dialog>
@@ -50,19 +119,12 @@
           formData: {
             type: Object
           },
-          userData: {
+          discountData: {
             type: Object,
             value: {}
-          },
-          hideErrorDesc: {
-            type: Boolean,
-            value: true
-          },
-          errorDesc: String,
-          loading: {
-            type: Boolean,
-            value: false
-          }
+          }, 
+          discountIncreasePercent: Number,
+          amountToApplyDiscount: Number
         };
       }
 
@@ -74,21 +136,48 @@
 
       open(){
         /* Fix Modal paper-dialog appears behind its backdrop */
-        var app = document.querySelector('body').firstElementChild.shadowRoot;
-        Polymer.dom(app).appendChild(this.$.discountDialog);
+        // var app = document.querySelector('body').firstElementChild.shadowRoot;
+        // Polymer.dom(app).appendChild(this.$.discountDialog);
         
-        this.hideErrorDesc = true;
-        this.errorDesc = "";
         this.formData = {};
-        this.$.discount.invalid = false;
+        this.set('formData.percentage', this.discountData.percentage);
+
+        this.set('formData.amount', (this.amountToApplyDiscount * this.discountData.percentage) / 100);
+        this._calcAmount();
+
+        this.$.percentage.invalid = false;
+        this.$.amount.invalid = false;
 
         this.$.discountDialog.open();
       }
 
+      close(){
+        this.$.discountDialog.close();
+      }
+
+      _percentageDec(){
+        if (Number(this.formData.percentage) - Number(this.discountIncreasePercent) >= Number(this.discountData.minValue)){
+          this.set('formData.percentage', Number(this.formData.percentage) - Number(this.discountIncreasePercent));
+          this._calcAmount();
+        }
+      }
+
+      _percentageInc(){
+        if (Number(this.formData.percentage) + Number(this.discountIncreasePercent) <= Number(this.discountData.maxValue)){
+          this.set('formData.percentage', Number(this.formData.percentage) + Number(this.discountIncreasePercent));
+          this._calcAmount();
+        }
+      }
+
+      _calcAmount(){
+        this.set('formData.amount', (this.amountToApplyDiscount * this.formData.percentage) / 100);
+      }
+
       _accept(){
-        if (this.$.discount.validate()) {
-          this.dispatchEvent(new CustomEvent('discount-accepted', {detail: {user: this.userData, discount: this.formData.discount}, bubbles: true, composed: true }));
-          this.$.discountDialog.close();
+        if (this.$.percentage.validate()) {
+          console.log('accept')
+          // this.dispatchEvent(new CustomEvent('discount-accepted', {detail: {user: this.userData, discount: this.formData.discount}, bubbles: true, composed: true }));
+          // this.$.discountDialog.close();
         }
       }
     }
