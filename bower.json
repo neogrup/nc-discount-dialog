@@ -1,0 +1,41 @@
+{
+  "name": "nc-discount-dialog",
+  "version": "1.0.0",
+  "description": "Polymer component to display a discount dialog",
+  "authors": [
+    "edgar.piera@neogrup.com"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "nc"
+  ],
+  "main": "nc-discount-dialog.html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NEOGRUP/nc-discount-dialog"
+  },
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.0.0",
+    "paper-dialog": "PolymerElements/paper-dialog#^2.1.1",
+    "paper-button": "PolymerElements/paper-button#^2.1.3",
+    "paper-spinner": "PolymerElements/paper-spinner#^2.1.0",
+    "paper-input": "PolymerElements/paper-input#^2.2.3",
+    "iron-icons": "PolymerElements/iron-icons#^2.1.1",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#^2.0.2",
+    "iron-a11y-keys": "PolymerElements/iron-a11y-keys#^2.1.2",
+    "neon-animation": "PolymerElements/neon-animation#^2.2.1",
+    "web-animations-js": "^2.3.1"
+  },
+  "devDependencies": {
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
+    "web-component-tester": "Polymer/web-component-tester#^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+  },
+  "resolutions": {
+    "polymer": "^2.0.0"
+  }
+}

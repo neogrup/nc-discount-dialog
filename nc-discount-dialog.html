@@ -1,0 +1,98 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../neon-animation/web-animations.html">
+<link rel="import" href="../neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../paper-spinner/paper-spinner.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/communication-icons.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
+
+<dom-module id="nc-discount-dialog">
+  <template>
+    <style>
+    </style>
+    
+    <paper-dialog id="discountDialog" class="modalNoApp" modal entry-animation="scale-up-animation">
+      <iron-a11y-keys id="a11ySignIn" keys="enter" on-keys-pressed="_accept"></iron-a11y-keys>
+      <div class="header">
+        <iron-icon icon="communication:vpn-key"></iron-icon><h3>{{localize('DISCOUNT_DIALOG_TITLE')}}</h3>
+      </div>
+      <div class="content">
+        <!-- <p>{{localize('DISCOUNT_DIALOG_SUBTITLE')}} <b>[[userData.name]]</b></p> -->
+        <p id="errorDiv" class="alert-error" hidden$="[[hideErrorDesc]]">[[errorDesc]]</p>
+
+        <paper-input _autofocus id="discount" _label="{{localize('INPUT_DISCOUNT')}}" type="discount" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.discount}}" required></paper-input>
+      </div>
+      <div class="buttons">
+        <div hidden$="{{!loading}}">
+          <paper-spinner class="dialog" active></paper-spinner>
+        </div>
+        <paper-button raised dialog-dismiss disabled$="[[loading]]">{{localize('BUTTON_CLOSE')}}</paper-button>
+        <paper-button raised disabled$="[[loading]]" on-tap="_accept">{{localize('BUTTON_ACCEPT')}}</paper-button>
+      </div>
+    </paper-dialog>
+
+  </template>
+
+  <script>
+    
+    class NcDiscountDialog extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
+      static get is() { return 'nc-discount-dialog'; }
+      static get properties() {
+        return {
+          language: {
+            type: String
+          },
+          formData: {
+            type: Object
+          },
+          userData: {
+            type: Object,
+            value: {}
+          },
+          hideErrorDesc: {
+            type: Boolean,
+            value: true
+          },
+          errorDesc: String,
+          loading: {
+            type: Boolean,
+            value: false
+          }
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.useKeyIfMissing = true;
+        this.loadResources(this.resolveUrl('static/translations.json'));
+      }
+
+      open(){
+        /* Fix Modal paper-dialog appears behind its backdrop */
+        var app = document.querySelector('body').firstElementChild.shadowRoot;
+        Polymer.dom(app).appendChild(this.$.discountDialog);
+        
+        this.hideErrorDesc = true;
+        this.errorDesc = "";
+        this.formData = {};
+        this.$.discount.invalid = false;
+
+        this.$.discountDialog.open();
+      }
+
+      _accept(){
+        if (this.$.discount.validate()) {
+          this.dispatchEvent(new CustomEvent('discount-accepted', {detail: {user: this.userData, discount: this.formData.discount}, bubbles: true, composed: true }));
+          this.$.discountDialog.close();
+        }
+      }
+    }
+
+    window.customElements.define(NcDiscountDialog.is, NcDiscountDialog);
+  </script>
+</dom-module>

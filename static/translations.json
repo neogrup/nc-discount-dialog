@@ -1,0 +1,26 @@
+{
+  "en":{
+    "BUTTON_ACCEPT": "Accept",
+    "BUTTON_CLOSE": "Close",
+    "INPUT_ERROR_REQUIRED": "Required field",
+    "INPUT_DISCOUNT": "Discount",
+    "DISCOUNT_DIALOG_SUBTITLE": "Type the discount. User: ",
+    "DISCOUNT_DIALOG_TITLE": "Discount"
+  },
+  "es": {
+    "BUTTON_ACCEPT": "Aceptar",
+    "BUTTON_CLOSE": "Cerrar",
+    "INPUT_ERROR_REQUIRED": "Campo obligatorio",
+    "INPUT_DISCOUNT": "Contraseña",
+    "DISCOUNT_DIALOG_SUBTITLE": "Introduzca la contraseña. Usuario: ",
+    "DISCOUNT_DIALOG_TITLE": "Contraseña"
+  },
+  "ca":{
+    "BUTTON_ACCEPT": "Acceptar",
+    "BUTTON_CLOSE": "Tancar",
+    "INPUT_ERROR_REQUIRED": "Camp obligatori",
+    "INPUT_DISCOUNT": "Contrasenya",
+    "DISCOUNT_DIALOG_SUBTITLE": "Escriviu la contrasenya. Usuari: ",
+    "DISCOUNT_DIALOG_TITLE": "Contrasenya"
+  }
+}

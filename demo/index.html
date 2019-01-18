@@ -1,0 +1,77 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2017 Neo
+-->
+<html lang="es">
+<head>
+  <title>nc-discount-dialog demo</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../polymer/polymer-element.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+
+  <link rel="import" href="../nc-discount-dialog.html">
+  <style>
+    body{
+      margin: 0px;
+      padding: 0px;
+      font-family: 'Roboto', 'Noto', sans-serif;
+    }
+    
+  </style>
+</head>
+<body unresolved>
+<dom-module id="nc-discount-dialog-demo">
+  <template>
+    <style>
+     :host {
+        color: #fff;
+        --app-secondary-color: #253855;
+        display: block;
+      }
+
+      paper-button{
+        margin: 10px 5px;
+        background-color: var(--app-secondary-color);
+        color: white;
+      }
+     
+    </style>
+
+
+    <paper-button raised on-tap="_open">Discount</paper-button>      
+
+    <nc-discount-dialog
+      id="discountDialog"
+      language="es"
+      on-discount-accepted="_discountOk"></nc-discount-dialog>
+
+  </template>
+  <script>
+    class NcDiscountDialogDemo extends Polymer.Element {
+      static get is() {
+        return 'nc-discount-dialog-demo';
+      }
+
+      _open(){
+        this.$.discountDialog.set('userData.name', 'Edgar');
+        this.$.discountDialog.set('userData.id', '01');
+        this.$.discountDialog.open();
+      }
+
+      _discountOk(){
+        console.log('discount ok !')
+      }
+     
+    }
+    window.customElements.define(NcDiscountDialogDemo.is, NcDiscountDialogDemo);
+  </script>
+</dom-module>
+<nc-discount-dialog-demo></nc-discount-dialog-demo>
+</body>
+</html>
