@@ -2,7 +2,6 @@
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../neon-animation/web-animations.html">
 <link rel="import" href="../neon-animation/animations/scale-up-animation.html">
-<link rel="import" href="../paper-spinner/paper-spinner.html">
 <link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
@@ -11,6 +10,7 @@
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../accounting/accounting.js">
 
 <dom-module id="nc-discount-dialog">
   <template>
@@ -19,6 +19,18 @@
         width: 60px;
         height: 60px;
       }
+
+      paper-input{
+        --paper-input-container-input: {
+          font-size: 1.5em;
+          text-align: center;
+        };
+        --paper-input-suffix: {
+          font-size: 1.5em;
+        };
+        
+      }
+
       paper-dialog.modalNoApp > div.header {
         @apply --layout-horizontal;
         @apply --layout-center;
@@ -32,30 +44,24 @@
 
       }
 
-      paper-dialog.modalNoApp > div.content > div.content-reference-values {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        @apply --layout-around-justified;
-      }
-
-      paper-dialog.modalNoApp > div.content > div.content-reference-values > div.min {
-        @apply --layout-vertical;
-        @apply --layout-center;
-      }
-      
-      paper-dialog.modalNoApp > div.content > div.content-reference-values > div.max {
-        @apply --layout-vertical;
-        @apply --layout-center;
-      }
-
       paper-dialog.modalNoApp > div.content > div.content-percentage {
         @apply --layout-horizontal;
         @apply --layout-center;
         @apply --layout-center-justified;
       }
 
+      paper-dialog.modalNoApp > div.content > div.content-percentage  > div.min {
+        @apply --layout-vertical;
+        @apply --layout-center;
+      }
+      
+      paper-dialog.modalNoApp > div.content > div.content-percentage  > div.max {
+        @apply --layout-vertical;
+        @apply --layout-center;
+      }
+
       paper-dialog.modalNoApp > div.content > div.content-percentage > div.percentage{
-        width: 80px;
+        width: 120px;
       }
 
       paper-dialog.modalNoApp > div.content > div.content-amount {
@@ -65,7 +71,7 @@
       }
 
       paper-dialog.modalNoApp > div.content > div.content-amount > div.amount {
-        width: 80px;
+        width: 120px;
       }
     </style>
     
@@ -75,27 +81,31 @@
         <h3>[[discountData.name]]</h3>
       </div>
       <div class="content">
-        <p>{{localize('DISCOUNT_DIALOG_SUBTITLE')}} <b>[[amountToApplyDiscount]] </b></p>
-        <div class="content-reference-values">
+        <div class="content-title">
+          <div>[[_formatNumber(amountToApplyDiscount)]] €</div>
+        </div>
+        <div class="content-percentage">
           <div class="min">
-            <div>Mín.</div>
+            <div>{{localize('DISCOUNT_DIALOG_MIN')}}</div>
             <div>[[discountData.minValue]]%</div>
           </div>
+          <paper-icon-button icon="remove-circle" style="color: var(--app-secondary-color);" on-tap="_percentageDec"></paper-icon-button>
+          <div class="percentage">
+            <paper-input id="percentage" on-focused-changed="_percantageFocused" on-value-changed="_percentageChanged" allowed-pattern="[0-9 . ,]" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.percentage}}" required>
+              <div slot="suffix">%</div>
+            </paper-input>
+          </div>
+          <paper-icon-button icon="add-circle" style="color: var(--app-secondary-color);" on-tap="_percentageInc"></paper-icon-button>
           <div class="max">
-            <div>Max.</div>
+              <div>{{localize('DISCOUNT_DIALOG_MAX')}}</div>
             <div>[[discountData.maxValue]]%</div>
           </div>
         </div>
-        <div class="content-percentage">
-          <paper-icon-button icon="remove-circle" style="color: var(--app-secondary-color);" on-tap="_percentageDec"></paper-icon-button>
-          <div class="percentage">
-            <paper-input id="percentage" label="{{localize('INPUT_DISCOUNT_PERCENTAGE')}}"  error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.percentage}}" required></paper-input>
-          </div>
-          <paper-icon-button icon="add-circle" style="color: var(--app-secondary-color);" on-tap="_percentageInc"></paper-icon-button>
-        </div>
         <div class="content-amount">
           <div class="amount">
-            <paper-input id="amount" label="{{localize('INPUT_DISCOUNT_AMOUNT')}}" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.amount}}" required></paper-input>
+            <paper-input id="amount" on-focused-changed="_amountFocused"  on-value-changed="_amountChanged" allowed-pattern="[0-9 . ,]" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.amount}}" required>
+              <div slot="suffix">€</div>
+            </paper-input>
           </div>
         </div>
       </div>
@@ -136,14 +146,13 @@
 
       open(){
         /* Fix Modal paper-dialog appears behind its backdrop */
-        // var app = document.querySelector('body').firstElementChild.shadowRoot;
-        // Polymer.dom(app).appendChild(this.$.discountDialog);
+        var app = document.querySelector('body').firstElementChild.shadowRoot;
+        Polymer.dom(app).appendChild(this.$.discountDialog);
         
         this.formData = {};
-        this.set('formData.percentage', this.discountData.percentage);
+        this.set('formData.percentage', this._formatNumber(this.discountData.percentage));
 
-        this.set('formData.amount', (this.amountToApplyDiscount * this.discountData.percentage) / 100);
-        this._calcAmount();
+        this._calcAmount(this.formData.percentage);
 
         this.$.percentage.invalid = false;
         this.$.amount.invalid = false;
@@ -156,30 +165,135 @@
       }
 
       _percentageDec(){
-        if (Number(this.formData.percentage) - Number(this.discountIncreasePercent) >= Number(this.discountData.minValue)){
-          this.set('formData.percentage', Number(this.formData.percentage) - Number(this.discountIncreasePercent));
-          this._calcAmount();
+        if (Number(this.formData.percentage.replace(',','.')) - Number(this.discountIncreasePercent) >= Number(this.discountData.minValue)){
+          this.set('formData.percentage', this._formatNumber(Number(this.formData.percentage.replace(',','.')) - Number(this.discountIncreasePercent)));
+          this._calcAmount(this.formData.percentage);
         }
       }
 
       _percentageInc(){
-        if (Number(this.formData.percentage) + Number(this.discountIncreasePercent) <= Number(this.discountData.maxValue)){
-          this.set('formData.percentage', Number(this.formData.percentage) + Number(this.discountIncreasePercent));
-          this._calcAmount();
+        if (Number(this.formData.percentage.replace(',','.')) + Number(this.discountIncreasePercent) <= Number(this.discountData.maxValue)){
+          this.set('formData.percentage', this._formatNumber(Number(this.formData.percentage.replace(',','.')) + Number(this.discountIncreasePercent)));
+          this._calcAmount(this.formData.percentage);
         }
       }
 
-      _calcAmount(){
-        this.set('formData.amount', (this.amountToApplyDiscount * this.formData.percentage) / 100);
+      _percentageChanged(e){
+        let percentage = e.detail.value;
+        percentage = percentage.replace(',','.');
+        this.set('formData.percentage', percentage.replace('.',','));
+
+        this._calcAmount(percentage);
+      }
+
+      _amountChanged(e){
+        let amount = e.detail.value;
+        amount = amount.replace(',','.');
+        this.set('formData.amount', amount.replace('.',','));
+
+        this._calcPercentage(amount);
+      }
+
+      _calcAmount(percentage){
+        if (!this.formData) return;
+        this.set('formData.amount', this._formatNumber((this.amountToApplyDiscount * percentage.replace(',','.')) / 100));
+      }
+
+      _calcPercentage(amount){
+        if (!this.formData) return;
+        this.set('formData.percentage', this._formatNumber((amount.replace(',','.') * 100) / this.amountToApplyDiscount));
+      }
+
+      _formatNumber(number) {
+        let numberText = "";
+        numberText = accounting.formatNumber(number, 2, ".", ",")
+        return numberText;
+      }
+
+      _percantageFocused(e){
+        if (e.detail.value === true){
+          this.$.percentage.inputElement.inputElement.select();
+        }
+      }
+
+      _amountFocused(e){
+        if (e.detail.value === true){
+          this.$.amount.inputElement.inputElement.select();
+        }
       }
 
       _accept(){
-        if (this.$.percentage.validate()) {
-          console.log('accept')
-          // this.dispatchEvent(new CustomEvent('discount-accepted', {detail: {user: this.userData, discount: this.formData.discount}, bubbles: true, composed: true }));
-          // this.$.discountDialog.close();
+        if (this.$.percentage.validate() && this.$.amount.validate()) {
+          if (this._percentageValidate() && this._amountValidate()){
+            this.formData.percentage = Number(this.formData.percentage.replace(',','.'))
+            this.formData.amount = Number(this.formData.amount.replace(',','.'))
+            this.dispatchEvent(new CustomEvent('discount-accepted', {detail: {discount:this.formData, discountData: this.discountData}, bubbles: true, composed: true }));
+            this.$.discountDialog.close();
+          }
         }
       }
+
+      _percentageValidate(){
+        let regexp1 = /^\d+(\.)$/;
+        let regexp2 = /^\d+(\.\d{1,2})?$/;
+
+        let isValid = true;
+        let percentage = this.$.percentage;
+        let percentageValue = String(percentage.value).replace(',','.');
+
+
+        if (percentageValue != "") {
+          if (!regexp1.test(percentageValue) && (!regexp2.test(percentageValue))) {
+            isValid = false;
+            percentage.errorMessage = this.localize('INPUT_ERROR_NUMBER_INVALID');
+          } else{
+            if (((parseFloat(percentageValue) < this.discountData.minValue)) || (parseFloat(percentageValue) > this.discountData.maxValue)){
+              isValid = false;
+              percentage.errorMessage = this.localize('INPUT_ERROR_NUMBER_EXCESS');
+            }
+          }
+
+        } else{
+          percentage.errorMessage = this.localize('INPUT_ERROR_REQUIRED');
+          isValid = false;
+        }
+
+        if (!isValid){
+          percentage.invalid = true;
+          percentage.focus();
+        }
+        return isValid;
+
+      }
+
+      _amountValidate(){
+        let regexp1 = /^\d+(\.)$/;
+        let regexp2 = /^\d+(\.\d{1,2})?$/;
+
+        let isValid = true;
+        let amount = this.$.amount;
+        let amountValue = String(amount.value).replace(',','.')
+
+
+        if (amountValue != "") {
+          if (!regexp1.test(amountValue) && (!regexp2.test(amountValue))) {
+            isValid = false;
+            amount.errorMessage = this.localize('INPUT_ERROR_NUMBER_INVALID');
+          }
+        }
+        else{
+          amount.errorMessage = this.localize('INPUT_ERROR_REQUIRED');
+          isValid = false;
+        }
+
+        if (!isValid){
+          amount.invalid = true;
+          amount.focus();
+        }
+        return isValid;
+
+      }
+
     }
 
     window.customElements.define(NcDiscountDialog.is, NcDiscountDialog);
