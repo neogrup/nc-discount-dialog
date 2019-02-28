@@ -1,77 +1,121 @@
 <!doctype html>
-<!--
-@license
-Copyright (c) 2017 Neo
--->
-<html lang="es">
-<head>
-  <title>nc-discount-dialog demo</title>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <title>nc-discount-dialog demo</title>
 
-  <link rel="import" href="../../polymer/polymer-element.html">
-  <link rel="import" href="../../paper-button/paper-button.html">
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../node_modules/web-animations-js/web-animations-next-lite.min.js"></script>
 
-  <link rel="import" href="../nc-discount-dialog.html">
-  <style>
-    body{
-      margin: 0px;
-      padding: 0px;
-      font-family: 'Roboto', 'Noto', sans-serif;
-    }
-    
-  </style>
-</head>
-<body unresolved>
-<dom-module id="nc-discount-dialog-demo">
-  <template>
-    <style>
-     :host {
-        color: #fff;
-        --app-secondary-color: #253855;
-        display: block;
+    <script type="module">
+      import '@polymer/iron-demo-helpers/demo-pages-shared-styles';
+      import '@polymer/iron-demo-helpers/demo-snippet';
+    </script>
+
+    <script type="module" src="../nc-discount-dialog.js"></script>
+
+    <custom-style>
+      <style is="custom-style" include="demo-pages-shared-styles">
+      </style>
+    </custom-style>
+  </head>
+  <body>
+    <div class="vertical-section-container centered">
+      <h3>nc-discount-dialog demo</h3>
+      <demo-snippet>
+        <template>
+          <demo-nc-discount-dialog></demo-nc-discount-dialog>
+        </template>
+      </demo-snippet>
+    </div>
+
+    <script type="module">
+      import {html, PolymerElement} from '@polymer/polymer/polymer-element.js';
+      import '@polymer/paper-button/paper-button.js';
+      import '@polymer/iron-ajax/iron-ajax.js';
+  
+      class DemoNcDiscountDialog extends PolymerElement {
+        static get template() {
+          return html`
+            <style>
+              :host {
+                color: #fff;
+                --app-secondary-color: #253855;
+                display: block;
+              }
+              paper-button{
+                margin: 10px 5px;
+                background-color: var(--app-secondary-color);
+                color: white;
+              }
+            </style>
+  
+            <paper-button raised on-tap="_openLineDiscount">Line Discount</paper-button>      
+            <paper-button raised on-tap="_openDocDiscount">Doc Discount</paper-button>      
+            <nc-discount-dialog
+                id="discountDialog"
+                language="es"
+                on-discount-accepted="_discountOk">
+            </nc-discount-dialog>
+          `;
+        }
+  
+        _openDocDiscount(){
+          let discount = {"code": "DTVP",
+            "name": "Dto. de pie",
+            "kind": "doc",
+            "minDocAmount": null,
+            "percentage": 20,
+            "amount": null,
+            "variable": "",
+            "minValue": 5,
+            "maxValue": 100,
+            "urlImage": "imgdisct/R002/Descuentos/TVA.png",
+            "backgroundColor": "#FFCC80"
+          };
+          this.$.discountDialog.set('discountData', discount);
+
+          this.$.discountDialog.set('discountIncreasePercent', 5);
+          if (discount.kind === 'doc'){
+            this.$.discountDialog.set('amountToApplyDiscount', 20.5);
+          } else{
+            this.$.discountDialog.set('amountToApplyDiscount', 5.5);
+          }
+          this.$.discountDialog.open();
+        }
+
+        _openLineDiscount(){
+          let discount = {"code": "DTVP",
+          "code": "DTVA",
+          "name": "Dto. de línea",
+          "kind": "line",
+          "minDocAmount": null,
+          "percentage": 20,
+          "amount": null,
+          "variable": "",
+          "minValue": 5,
+          "maxValue": 100,
+          "urlImage": "imgdisct/R002/Descuentos/LVA.png",
+          "backgroundColor": "#80CBC4"
+          };
+          this.$.discountDialog.set('discountData', discount);
+
+          this.$.discountDialog.set('discountIncreasePercent', 5);
+          if (discount.kind === 'doc'){
+            this.$.discountDialog.set('amountToApplyDiscount', 20.5);
+          } else{
+            this.$.discountDialog.set('amountToApplyDiscount', 5.5);
+          }
+          this.$.discountDialog.open();
+        }
+
+        _discountOk(){
+          console.log('discount ok !')
+        }
       }
-
-      paper-button{
-        margin: 10px 5px;
-        background-color: var(--app-secondary-color);
-        color: white;
-      }
-     
-    </style>
-
-
-    <paper-button raised on-tap="_open">Discount</paper-button>      
-
-    <nc-discount-dialog
-      id="discountDialog"
-      language="es"
-      on-discount-accepted="_discountOk"></nc-discount-dialog>
-
-  </template>
-  <script>
-    class NcDiscountDialogDemo extends Polymer.Element {
-      static get is() {
-        return 'nc-discount-dialog-demo';
-      }
-
-      _open(){
-        this.$.discountDialog.set('userData.name', 'Edgar');
-        this.$.discountDialog.set('userData.id', '01');
-        this.$.discountDialog.open();
-      }
-
-      _discountOk(){
-        console.log('discount ok !')
-      }
-     
-    }
-    window.customElements.define(NcDiscountDialogDemo.is, NcDiscountDialogDemo);
-  </script>
-</dom-module>
-<nc-discount-dialog-demo></nc-discount-dialog-demo>
-</body>
+      window.customElements.define('demo-nc-discount-dialog', DemoNcDiscountDialog);
+    </script>
+  </body>
 </html>
