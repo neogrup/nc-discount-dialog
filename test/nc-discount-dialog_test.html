@@ -106,81 +106,84 @@
 
   </template>
 
-  <script>
+  <script type="module">
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { AppLocalizeBehavior } from '@polymer/app-localize-behavior/app-localize-behavior.js';
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+
+class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElement) {
+  static get is() { return 'nc-discount-dialog'; }
+  static get properties() {
+    return {
+      language: {
+        type: String
+      },
+      formData: {
+        type: Object
+      },
+      discountData: {
+        type: Object,
+        value: {}
+      }, 
+      discountIncreasePercent: Number,
+      amountToApplyDiscount: Number
+    };
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.useKeyIfMissing = true;
+    this.loadResources(this.resolveUrl('static/translations.json'));
+  }
+
+  open(){
+    /* Fix Modal paper-dialog appears behind its backdrop */
+    // var app = document.querySelector('body').firstElementChild.shadowRoot;
+    // Polymer.dom(app).appendChild(this.$.discountDialog);
     
-    class NcDiscountDialog extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
-      static get is() { return 'nc-discount-dialog'; }
-      static get properties() {
-        return {
-          language: {
-            type: String
-          },
-          formData: {
-            type: Object
-          },
-          discountData: {
-            type: Object,
-            value: {}
-          }, 
-          discountIncreasePercent: Number,
-          amountToApplyDiscount: Number
-        };
-      }
+    this.formData = {};
+    this.set('formData.percentage', this.discountData.percentage);
 
-      connectedCallback() {
-        super.connectedCallback();
-        this.useKeyIfMissing = true;
-        this.loadResources(this.resolveUrl('static/translations.json'));
-      }
+    this.set('formData.amount', (this.amountToApplyDiscount * this.discountData.percentage) / 100);
+    this._calcAmount();
 
-      open(){
-        /* Fix Modal paper-dialog appears behind its backdrop */
-        // var app = document.querySelector('body').firstElementChild.shadowRoot;
-        // Polymer.dom(app).appendChild(this.$.discountDialog);
-        
-        this.formData = {};
-        this.set('formData.percentage', this.discountData.percentage);
+    this.$.percentage.invalid = false;
+    this.$.amount.invalid = false;
 
-        this.set('formData.amount', (this.amountToApplyDiscount * this.discountData.percentage) / 100);
-        this._calcAmount();
+    this.$.discountDialog.open();
+  }
 
-        this.$.percentage.invalid = false;
-        this.$.amount.invalid = false;
+  close(){
+    this.$.discountDialog.close();
+  }
 
-        this.$.discountDialog.open();
-      }
-
-      close(){
-        this.$.discountDialog.close();
-      }
-
-      _percentageDec(){
-        if (Number(this.formData.percentage) - Number(this.discountIncreasePercent) >= Number(this.discountData.minValue)){
-          this.set('formData.percentage', Number(this.formData.percentage) - Number(this.discountIncreasePercent));
-          this._calcAmount();
-        }
-      }
-
-      _percentageInc(){
-        if (Number(this.formData.percentage) + Number(this.discountIncreasePercent) <= Number(this.discountData.maxValue)){
-          this.set('formData.percentage', Number(this.formData.percentage) + Number(this.discountIncreasePercent));
-          this._calcAmount();
-        }
-      }
-
-      _calcAmount(){
-        this.set('formData.amount', (this.amountToApplyDiscount * this.formData.percentage) / 100);
-      }
-
-      _accept(){
-        if (this.$.percentage.validate()) {
-          console.log('accept')
-          // this.dispatchEvent(new CustomEvent('discount-accepted', {detail: {user: this.userData, discount: this.formData.discount}, bubbles: true, composed: true }));
-          // this.$.discountDialog.close();
-        }
-      }
+  _percentageDec(){
+    if (Number(this.formData.percentage) - Number(this.discountIncreasePercent) >= Number(this.discountData.minValue)){
+      this.set('formData.percentage', Number(this.formData.percentage) - Number(this.discountIncreasePercent));
+      this._calcAmount();
     }
+  }
 
-    window.customElements.define(NcDiscountDialog.is, NcDiscountDialog);
-  </script>
+  _percentageInc(){
+    if (Number(this.formData.percentage) + Number(this.discountIncreasePercent) <= Number(this.discountData.maxValue)){
+      this.set('formData.percentage', Number(this.formData.percentage) + Number(this.discountIncreasePercent));
+      this._calcAmount();
+    }
+  }
+
+  _calcAmount(){
+    this.set('formData.amount', (this.amountToApplyDiscount * this.formData.percentage) / 100);
+  }
+
+  _accept(){
+    if (this.$.percentage.validate()) {
+      console.log('accept')
+      // this.dispatchEvent(new CustomEvent('discount-accepted', {detail: {user: this.userData, discount: this.formData.discount}, bubbles: true, composed: true }));
+      // this.$.discountDialog.close();
+    }
+  }
+}
+
+window.customElements.define(NcDiscountDialog.is, NcDiscountDialog);
+</script>
 </dom-module>
