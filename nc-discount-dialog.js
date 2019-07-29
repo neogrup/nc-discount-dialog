@@ -77,7 +77,7 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
         }
       </style>
       
-      <paper-dialog id="discountDialog" class="modalNoApp" modal entry-animation="scale-up-animation" dialog>
+      <paper-dialog id="discountDialog" class="modalNoApp"  dialog>
         <iron-a11y-keys id="a11ySignIn" keys="enter" on-keys-pressed="_accept"></iron-a11y-keys>
         <div class="header">
           <h3>[[discountData.name]]</h3>
