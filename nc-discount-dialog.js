@@ -77,7 +77,7 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
         }
       </style>
       
-      <paper-dialog id="discountDialog" class="modalNoApp"  dialog>
+      <paper-dialog id="discountDialog" class="modalNoApp" modal dialog>
         <iron-a11y-keys id="a11ySignIn" keys="enter" on-keys-pressed="_accept"></iron-a11y-keys>
         <div class="header">
           <h3>[[discountData.name]]</h3>
@@ -93,7 +93,7 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
             </div>
             <paper-icon-button icon="remove-circle" style="color: var(--app-secondary-color);" on-tap="_percentageDec"></paper-icon-button>
             <div class="percentage">
-              <paper-input id="percentage" on-focused-changed="_percantageFocused" on-value-changed="_percentageChanged" allowed-pattern="[0-9 . ,]" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.percentage}}" required>
+              <paper-input id="percentage" on-focused-changed="_percantageFocused" on-value-changed="_percentageChanged" allowed-pattern="[0-9 . ,]" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.percentage}}" required on-focus="_setFocus" on-blur="_setBlur">
                 <div slot="suffix">%</div>
               </paper-input>
             </div>
@@ -105,7 +105,7 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
           </div>
           <div class="content-amount">
             <div class="amount">
-              <paper-input id="amount" on-focused-changed="_amountFocused" on-value-changed="_amountChanged" allowed-pattern="[0-9 . ,]" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.amount}}" required>
+              <paper-input id="amount" on-focused-changed="_amountFocused" on-value-changed="_amountChanged" allowed-pattern="[0-9 . ,]" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.amount}}" required  on-focus="_setFocus" on-blur="_setBlur">
                 <div slot="suffix">€</div>
               </paper-input>
             </div>
@@ -294,6 +294,17 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
     }
     return isValid;
 
+  }
+
+  _setFocus(){
+    this.dispatchEvent(new CustomEvent('inputFocus', {bubbles: true, composed: true }));
+  }
+
+  _setBlur(){
+    this._debouncer = Debouncer.debounce(this._debouncer,
+      timeOut.after(500),
+      () => this.dispatchEvent(new CustomEvent('inputBlur', {bubbles: true, composed: true }))
+    );
   }
 }
 

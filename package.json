@@ -10,7 +10,7 @@
     "url": "https://github.com/NEOGRUP/nc-discount-dialog"
   },
   "name": "@neogrup/nc-discount-dialog",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "resolutions": {
     "inherits": "2.0.3",
     "samsam": "1.1.3",
