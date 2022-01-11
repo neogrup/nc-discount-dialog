@@ -10,6 +10,7 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/communication-icons.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/iron-a11y-keys/iron-a11y-keys.js';
+import '@neogrup/nc-icons/nc-icons.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { AppLocalizeBehavior } from '@polymer/app-localize-behavior/app-localize-behavior.js';
@@ -36,6 +37,7 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
         }
 
         paper-dialog.modalNoApp > div.header {
+          margin-top: 0px;
           @apply --layout-horizontal;
           @apply --layout-center;
         }
@@ -77,12 +79,23 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
         paper-dialog.modalNoApp > div.content > div.content-amount > div.amount {
           width: 120px;
         }
+
+        paper-button.delete:not([disabled]){
+          background-color: var(--error-color);
+        }
+
+        paper-button.accept:not([disabled]){
+          background-color: var(--success-color);
+        }
       </style>
       
+      <nc-icons></nc-icons>
+
       <paper-dialog id="discountDialog" class="modalNoApp" modal dialog>
         <iron-a11y-keys id="a11ySignIn" keys="enter" on-keys-pressed="_accept"></iron-a11y-keys>
+
         <div class="header">
-          <h3>[[discountData.name]]</h3>
+          <iron-icon icon="nc-icons:discount_2"></iron-icon><h3>[[discountData.name]]</h3>
         </div>
         <div class="content">
           <div class="content-title">
@@ -114,8 +127,8 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
           </div>
         </div>
         <div class="buttons">
-          <paper-button raised dialog-dismiss>{{localize('BUTTON_CLOSE')}}</paper-button>
-          <paper-button raised disabled\$="[[loading]]" on-tap="_accept">{{localize('BUTTON_ACCEPT')}}</paper-button>
+          <paper-button class="delete" raised dialog-dismiss>{{localize('BUTTON_CLOSE')}}</paper-button>
+          <paper-button class="accept" raised disabled\$="[[loading]]" on-tap="_accept">{{localize('BUTTON_ACCEPT')}}</paper-button>
         </div>
       </paper-dialog>
     `;
