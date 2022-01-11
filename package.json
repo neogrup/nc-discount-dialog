@@ -30,6 +30,7 @@
         "@polymer/paper-icon-button": "^3.0.0",
         "@polymer/paper-input": "^3.0.2",
         "@polymer/polymer": "^3.3.0",
+        "@neogrup/nc-icons": "^1.0.1",
         "accounting-js": "^1.1.1",
         "web-animations-js": "^2.3.2"
     },
