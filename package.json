@@ -10,7 +10,7 @@
         "url": "https://github.com/NEOGRUP/nc-discount-dialog"
     },
     "name": "@neogrup/nc-discount-dialog",
-    "version": "2.0.6",
+    "version": "2.0.7",
     "resolutions": {
         "inherits": "2.0.3",
         "samsam": "1.1.3",
@@ -31,6 +31,7 @@
         "@polymer/paper-input": "^3.0.2",
         "@polymer/polymer": "^3.3.0",
         "@neogrup/nc-icons": "^1.0.1",
+        "@neogrup/nc-keyboard": "^1.0.6",
         "accounting-js": "^1.1.1",
         "web-animations-js": "^2.3.2"
     },

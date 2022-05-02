@@ -11,6 +11,7 @@ import '@polymer/iron-icons/communication-icons.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/iron-a11y-keys/iron-a11y-keys.js';
 import '@neogrup/nc-icons/nc-icons.js';
+import '@neogrup/nc-keyboard/nc-keyboard.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { AppLocalizeBehavior } from '@polymer/app-localize-behavior/app-localize-behavior.js';
@@ -48,6 +49,10 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
 
         paper-dialog.modalNoApp > div.content {
 
+        }
+
+        paper-dialog.modalNoApp > div.content > div.content-keyboard{
+          margin-top: 20px;
         }
 
         paper-dialog.modalNoApp > div.content > div.content-percentage {
@@ -108,7 +113,7 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
             </div>
             <paper-icon-button icon="remove-circle" style="color: var(--app-secondary-color);" on-tap="_percentageDec"></paper-icon-button>
             <div class="percentage">
-              <paper-input id="percentage" on-focused-changed="_percantageFocused" on-value-changed="_percentageChanged" allowed-pattern="[0-9 . ,]" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.percentage}}" required on-focus="_setFocus" on-blur="_setBlur">
+              <paper-input id="percentage" on-focused-changed="_percantageFocusChanged" on-value-changed="_percentageValueChanged" allowed-pattern="[0-9 . ,]" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.percentage}}" required>
                 <div slot="suffix">%</div>
               </paper-input>
             </div>
@@ -120,10 +125,20 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
           </div>
           <div class="content-amount">
             <div class="amount">
-              <paper-input id="amount" on-focused-changed="_amountFocused" on-value-changed="_amountChanged" allowed-pattern="[0-9 . ,]" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.amount}}" required  on-focus="_setFocus" on-blur="_setBlur">
+              <paper-input id="amount" on-focused-changed="_amountFocusChanged" on-value-changed="_amountValueChanged" allowed-pattern="[0-9 . ,]" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.amount}}">
                 <div slot="suffix">€</div>
               </paper-input>
             </div>
+          </div>
+
+          <div class="content-keyboard">
+            <nc-keyboard
+                keyboard-enabled="{{showKeyboard}}"
+                keyboard-embedded='S'
+                keyboard-type="keyboardNumeric"
+                value="{{keyboardValue}}"
+                keyboard-current-input="{{keyboardCurrentInput}}">
+              </nc-keyboard>
           </div>
         </div>
         <div class="buttons">
@@ -147,7 +162,21 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
         value: {}
       }, 
       discountIncreasePercent: Number,
-      amountToApplyDiscount: Number
+      amountToApplyDiscount: Number,
+      showKeyboard: {
+        type: String,
+      },
+      keyboardValue: {
+        type: String,
+        observer: '_keyboardValueChanged'
+      },
+      keyboardType: {
+        type: String,
+        value: 'keyboard'
+      },
+      keyboardCurrentInput: {
+        type: Object
+      },
     };
   }
 
@@ -167,6 +196,12 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
     dom(app).appendChild(this.$.discountDialog);
     
     this.formData = {};
+    this.keyboardValue = "";
+    this.currentInput = "";
+    this.keyboardCurrentInput = {};
+
+    this.currentInput = "percentage";
+
     this.set('formData.percentage', this._formatNumber(this.discountData.percentage));
 
     this._calcAmount(this.formData.percentage);
@@ -175,6 +210,10 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
     this.$.amount.invalid = false;
 
     this.$.discountDialog.open();
+    this._setFocusDebouncer = Debouncer.debounce(this._setFocusDebouncer,
+      timeOut.after(500),
+      () => this._setFocus()
+    );
   }
 
   close(){
@@ -185,6 +224,7 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
     if (Number(this.formData.percentage.replace(',','.')) - Number(this.discountIncreasePercent) >= Number(this.discountData.minValue)){
       this.set('formData.percentage', this._formatNumber(Number(this.formData.percentage.replace(',','.')) - Number(this.discountIncreasePercent)));
       this._calcAmount(this.formData.percentage);
+      this._setFocus();
     }
   }
 
@@ -192,21 +232,32 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
     if (Number(this.formData.percentage.replace(',','.')) + Number(this.discountIncreasePercent) <= Number(this.discountData.maxValue)){
       this.set('formData.percentage', this._formatNumber(Number(this.formData.percentage.replace(',','.')) + Number(this.discountIncreasePercent)));
       this._calcAmount(this.formData.percentage);
+      this._setFocus();
     }
   }
 
-  _percentageChanged(e){
+  _percentageValueChanged(e){
     let percentage = e.detail.value;
+    this.keyboardValue = e.detail.value;
     percentage = percentage.replace(',','.');
     this.set('formData.percentage', percentage.replace('.',','));
+    
+    if (this.showKeyboard == "S") {
+      this._setFocus();
+    }
 
     this._calcAmount(percentage);
   }
 
-  _amountChanged(e){
+  _amountValueChanged(e){
     let amount = e.detail.value;
+    this.keyboardValue = e.detail.value;
     amount = amount.replace(',','.');
     this.set('formData.amount', amount.replace('.',','));
+
+    if (this.showKeyboard == "S") {
+      this._setFocus();
+    }
 
     this._calcPercentage(amount);
   }
@@ -227,14 +278,29 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
     return numberText;
   }
 
-  _percantageFocused(e){
+  _percantageFocusChanged(e){
     if (e.detail.value === true){
+      this.currentInput = e.target.id;
+      let input;
+      input = this.$.percentage;
+      if (input){
+        this.keyboardCurrentInput = input;
+        this.keyboardValue = input.value;
+      }
+
       this.$.percentage.inputElement.inputElement.select();
     }
   }
 
-  _amountFocused(e){
+  _amountFocusChanged(e){
     if (e.detail.value === true){
+      this.currentInput = e.target.id;
+      let input;
+      input = this.$.amount;
+      if (input){
+        this.keyboardCurrentInput = input;
+        this.keyboardValue = input.value;
+      }
       this.$.amount.inputElement.inputElement.select();
     }
   }
@@ -311,15 +377,38 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
 
   }
 
-  _setFocus(){
-    this.dispatchEvent(new CustomEvent('inputFocus', {bubbles: true, composed: true }));
-  }
+  _keyboardValueChanged(){
+    let input;
 
-  _setBlur(){
-    this._debouncer = Debouncer.debounce(this._debouncer,
-      timeOut.after(500),
-      () => this.dispatchEvent(new CustomEvent('inputBlur', {bubbles: true, composed: true }))
-    );
+    if (this.currentInput === "percentage"){
+      input = this.$.percentage;
+    } else {
+      input = this.$.amount;
+    }
+
+    if (input){
+      this.keyboardCurrentInput = input;
+      input.value = this.keyboardValue;
+    }
+  }
+  
+  _setFocus(){
+    let input;
+    if (this.currentInput) {
+      if (this.currentInput === "percentage"){
+        input = this.$.percentage;
+        if (!input.focused){
+          this.$.percentage.focus();
+          this.$.percentage.inputElement.inputElement.select();
+        }
+      } else {
+        input = this.$.amount;
+        if (!input.focused){
+          this.$.amount.focus();
+          this.$.amount.inputElement.inputElement.select();
+        }
+      }
+    }
   }
 }
 
