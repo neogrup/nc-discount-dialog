@@ -104,7 +104,7 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
         </div>
         <div class="content">
           <div class="content-title">
-            <div>[[_formatNumber(amountToApplyDiscount)]] €</div>
+            <div>[[_formatNumber(amountToApplyDiscount)]] [[symbol]]</div>
           </div>
           <div class="content-percentage">
             <div class="min">
@@ -126,7 +126,7 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
           <div class="content-amount">
             <div class="amount">
               <paper-input id="amount" on-focused-changed="_amountFocusChanged" on-value-changed="_amountValueChanged" allowed-pattern="[0-9 . ,]" error-message="{{localize('INPUT_ERROR_REQUIRED')}}" value="{{formData.amount}}">
-                <div slot="suffix">€</div>
+                <div slot="suffix">[[symbol]]</div>
               </paper-input>
             </div>
           </div>
@@ -154,6 +154,7 @@ class NcDiscountDialog extends mixinBehaviors([AppLocalizeBehavior], PolymerElem
       language: {
         type: String
       },
+      symbol: String,
       formData: {
         type: Object
       },
