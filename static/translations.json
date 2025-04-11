@@ -34,5 +34,29 @@
     "INPUT_ERROR_REQUIRED": "Camp obligatori",
     "INPUT_DISCOUNT_AMOUNT": "Import",
     "INPUT_DISCOUNT_PERCENTAGE": "%"
+  },
+  "fr":{
+    "BUTTON_ACCEPT": "Accepter",
+    "BUTTON_CLOSE": "Fermer",
+    "DISCOUNT_DIALOG_MAX": "Max.",
+    "DISCOUNT_DIALOG_MIN": "Min.",
+    "DISCOUNT_DIALOG_SUBTITLE": "Montant total:",
+    "INPUT_ERROR_NUMBER_EXCESS": "Pourcentage invalide",
+    "INPUT_ERROR_NUMBER_INVALID": "Nombre invalide",
+    "INPUT_ERROR_REQUIRED": "Champ requis",
+    "INPUT_DISCOUNT_AMOUNT": "Montant",
+    "INPUT_DISCOUNT_PERCENTAGE": "%"
+  },
+  "eu-es":{
+    "BUTTON_ACCEPT": "Onartu",
+    "BUTTON_CLOSE": "Itxi",
+    "DISCOUNT_DIALOG_MAX": "Max.",
+    "DISCOUNT_DIALOG_MIN": "Min.",
+    "DISCOUNT_DIALOG_SUBTITLE": "Guztira:",
+    "INPUT_ERROR_NUMBER_EXCESS": "Portzentaje baliogabea",
+    "INPUT_ERROR_NUMBER_INVALID": "Zenbaki baliogabea",
+    "INPUT_ERROR_REQUIRED": "Beharrezkoa",
+    "INPUT_DISCOUNT_AMOUNT": "Zenbateko",
+    "INPUT_DISCOUNT_PERCENTAGE": "%"
   }
 }
